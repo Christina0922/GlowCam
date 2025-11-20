@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlowCam - 아이돌 필터 앱 화면 미리보기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 화려한 배경 애니메이션 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #000000 0%, #1a0033 50%, #330066 100%);
+            z-index: -3;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 124, 203, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(102, 126, 234, 0.3) 0%, transparent 50%);
+            animation: glowPulse 4s ease-in-out infinite;
+            z-index: -2;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        /* 반짝이 효과 */
+        .sparkle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #FF7CCB;
+            animation: sparkle 3s infinite;
+            z-index: -1;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1) rotate(180deg); }
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #000;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* 홈 화면 */
+        .home-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .home-screen.hidden {
+            display: none;
+        }
+
+        .app-title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #FF7CCB 0%, #FFB6E1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 124, 203, 0.5);
+            letter-spacing: 2px;
+            animation: titleGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 124, 203, 0.5)); }
+            50% { filter: drop-shadow(0 0 20px rgba(255, 124, 203, 0.8)); }
+        }
+
+        .app-subtitle {
+            font-size: 16px;
+            color: #999;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        .primary-button {
+            background: #FF7CCB;
+            color: #fff;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 40px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .primary-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(255, 124, 203, 0.4);
+        }
+
+        .features {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-emoji {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .feature-text {
+            font-size: 16px;
+            color: #fff;
+        }
+
+        /* 카메라 화면 */
+        .camera-screen {
+            display: none;
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            overflow: hidden;
+        }
+
+        .camera-screen.active {
+            display: block;
+        }
+
+        .camera-preview {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .camera-preview::before {
+            content: '📷';
+            font-size: 120px;
+            opacity: 0.3;
+            position: absolute;
+        }
+
+        .camera-preview::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.3) 100%);
+        }
+
+        /* 필터 오버레이 효과 */
+        .filter-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .filter-overlay.pink-glow {
+            background: rgba(255, 124, 203, 0.15);
+            box-shadow: inset 0 0 100px rgba(255, 124, 203, 0.3);
+        }
+
+        .filter-overlay.fairy-glitter {
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+                radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+            background-size: 50px 50px, 80px 80px, 60px 60px;
+            animation: glitter 3s infinite;
+        }
+
+        @keyframes glitter {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .filter-overlay.princess-soft {
+            backdrop-filter: blur(2px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-overlay.idol-sharp {
+            filter: contrast(1.2) brightness(1.1);
+        }
+
+        .filter-overlay.snow-fairy {
+            background: rgba(200, 181, 255, 0.2);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.4) 2px, transparent 2px),
+                radial-gradient(circle at 90% 40%, rgba(255, 255, 255, 0.3) 1.5px, transparent 1.5px),
+                radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.4) 2px, transparent 2px);
+            background-size: 100px 100px, 120px 120px, 80px 80px;
+            animation: snow 5s infinite linear;
+        }
+
+        @keyframes snow {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 0 100px, 0 150px, 0 200px; }
+        }
+
+        /* 필터 버튼 */
+        .filter-button {
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        /* 컨트롤 버튼 */
+        .controls {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            z-index: 10;
+        }
+
+        .capture-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 35px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 4px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .capture-button:hover {
+            transform: scale(1.1);
+        }
+
+        .capture-button-inner {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: #fff;
+        }
+
+        .record-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: rgba(255, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .record-button.recording {
+            background: rgba(255, 0, 0, 0.8);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* 필터 선택 모달 */
+        .filter-modal {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 414px;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        .filter-modal.active {
+            display: block;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            padding: 20px;
+            padding-bottom: 40px;
+            max-height: 50vh;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .close-button {
+            font-size: 24px;
+            color: #fff;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-list {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+        }
+
+        .filter-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            min-width: 80px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-item.active {
+            background: #FF7CCB;
+        }
+
+        .filter-emoji {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .filter-name {
+            font-size: 12px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .filter-item.active .filter-name {
+            font-weight: bold;
+        }
+
+        /* 필터 강도 조절 */
+        .intensity-container {
+            margin-top: 20px;
+        }
+
+        .intensity-label {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-track {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slider-fill {
+            height: 100%;
+            background: #FF7CCB;
+            transition: width 0.2s;
+        }
+
+        .intensity-value {
+            color: #fff;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        /* 뒤로가기 버튼 */
+        .back-button {
+            position: absolute;
+            top: 50px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 홈 화면 -->
+        <div class="home-screen" id="homeScreen">
+            <h1 class="app-title">GlowCam</h1>
+            <p class="app-subtitle">아이돌 감성 필터로<br>완벽한 영상을 만들어보세요</p>
+            <button class="primary-button" onclick="showCamera()">카메라 시작</button>
+            
+            <div class="features">
+                <div class="feature-item">
+                    <span class="feature-emoji">💗</span>
+                    <span class="feature-text">5가지 아이돌 필터</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-emoji">✨</span>
+                    <span class="feature-text">자동 영상 편집</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-emoji">📱</span>
+                    <span class="feature-text">YouTube Shorts 지원</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 카메라 화면 -->
+        <div class="camera-screen" id="cameraScreen">
+            <button class="back-button" onclick="showHome()">← 뒤로</button>
+            <button class="filter-button" id="filterButton" onclick="toggleFilterModal()">필터 선택</button>
+            
+            <div class="camera-preview" id="cameraPreview">
+                <div class="filter-overlay" id="filterOverlay"></div>
+            </div>
+
+            <div class="controls">
+                <div class="capture-button" onclick="capturePhoto()">
+                    <div class="capture-button-inner"></div>
+                </div>
+                <div class="record-button" id="recordButton" onclick="toggleRecord()">
+                    <span>○</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 필터 선택 모달 -->
+        <div class="filter-modal" id="filterModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">필터 선택</h2>
+                    <button class="close-button" onclick="toggleFilterModal()">✕</button>
+                </div>
+                
+                <div class="filter-list" id="filterList">
+                    <!-- 필터 항목들이 여기에 동적으로 추가됩니다 -->
+                </div>
+
+                <div class="intensity-container" id="intensityContainer" style="display: none;">
+                    <div class="intensity-label">필터 강도</div>
+                    <div class="slider-container">
+                        <button class="slider-button" onclick="decreaseIntensity()">-</button>
+                        <div class="slider-track">
+                            <div class="slider-fill" id="sliderFill" style="width: 100%"></div>
+                        </div>
+                        <button class="slider-button" onclick="increaseIntensity()">+</button>
+                    </div>
+                    <div class="intensity-value" id="intensityValue">100%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilter = 'none';
+        let filterIntensity = 1.0;
+        let isRecording = false;
+
+        const filters = [
+            { type: 'none', name: '원본', emoji: '📷' },
+            { type: 'pinkGlow', name: '핑크 글로우', emoji: '💗' },
+            { type: 'fairyGlitter', name: '페어리 글리터', emoji: '✨' },
+            { type: 'princessSoft', name: '공주 소프트', emoji: '👑' },
+            { type: 'idolSharp', name: '아이돌 샤프', emoji: '⭐' },
+            { type: 'snowFairy', name: '스노우 페어리', emoji: '❄️' },
+        ];
+
+        // 필터 목록 렌더링
+        function renderFilters() {
+            const filterList = document.getElementById('filterList');
+            filterList.innerHTML = filters.map(filter => `
+                <div class="filter-item ${currentFilter === filter.type ? 'active' : ''}" 
+                     onclick="selectFilter('${filter.type}')">
+                    <div class="filter-emoji">${filter.emoji}</div>
+                    <div class="filter-name">${filter.name}</div>
+                </div>
+            `).join('');
+        }
+
+        // 필터 선택
+        function selectFilter(filterType) {
+            currentFilter = filterType;
+            renderFilters();
+            applyFilter();
+            updateFilterButton();
+            
+            const intensityContainer = document.getElementById('intensityContainer');
+            intensityContainer.style.display = filterType !== 'none' ? 'block' : 'none';
+        }
+
+        // 필터 적용
+        function applyFilter() {
+            const overlay = document.getElementById('filterOverlay');
+            overlay.className = 'filter-overlay';
+            
+            if (currentFilter !== 'none') {
+                const filterClass = currentFilter.replace(/([A-Z])/g, '-$1').toLowerCase();
+                overlay.classList.add(filterClass);
+            }
+        }
+
+        // 필터 버튼 업데이트
+        function updateFilterButton() {
+            const filterButton = document.getElementById('filterButton');
+            const selectedFilter = filters.find(f => f.type === currentFilter);
+            filterButton.textContent = selectedFilter ? selectedFilter.name : '필터 선택';
+        }
+
+        // 필터 강도 조절
+        function decreaseIntensity() {
+            filterIntensity = Math.max(0, filterIntensity - 0.1);
+            updateIntensity();
+        }
+
+        function increaseIntensity() {
+            filterIntensity = Math.min(1, filterIntensity + 0.1);
+            updateIntensity();
+        }
+
+        function updateIntensity() {
+            const sliderFill = document.getElementById('sliderFill');
+            const intensityValue = document.getElementById('intensityValue');
+            sliderFill.style.width = `${filterIntensity * 100}%`;
+            intensityValue.textContent = `${Math.round(filterIntensity * 100)}%`;
+            applyFilter();
+        }
+
+        // 모달 토글
+        function toggleFilterModal() {
+            const modal = document.getElementById('filterModal');
+            modal.classList.toggle('active');
+        }
+
+        // 화면 전환
+        function showCamera() {
+            document.getElementById('homeScreen').classList.add('hidden');
+            document.getElementById('cameraScreen').classList.add('active');
+            renderFilters();
+            updateFilterButton();
+        }
+
+        function showHome() {
+            document.getElementById('homeScreen').classList.remove('hidden');
+            document.getElementById('cameraScreen').classList.remove('active');
+            document.getElementById('filterModal').classList.remove('active');
+        }
+
+        // 촬영 기능
+        function capturePhoto() {
+            alert('📸 사진이 저장되었습니다!');
+        }
+
+        function toggleRecord() {
+            isRecording = !isRecording;
+            const recordButton = document.getElementById('recordButton');
+            const buttonText = recordButton.querySelector('span');
+            
+            if (isRecording) {
+                buttonText.textContent = '●';
+                recordButton.classList.add('recording');
+                alert('🔴 녹화가 시작되었습니다!');
+            } else {
+                buttonText.textContent = '○';
+                recordButton.classList.remove('recording');
+                alert('✅ 영상이 저장되었습니다!');
+            }
+        }
+
+        // 반짝이 효과 생성
+        function createSparkles() {
+            const container = document.body;
+            for (let i = 0; i < 30; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.top = Math.random() * 100 + '%';
+                sparkle.style.animationDelay = Math.random() * 3 + 's';
+                sparkle.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                container.appendChild(sparkle);
+            }
+        }
+
+        // 초기화
+        renderFilters();
+        createSparkles();
+    </script>
+</body>
+</html>
+

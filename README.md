@@ -1,4 +1,4 @@
-# Idol Filter App
+# GlowCam
 
 아이돌 감성 필터 + 자동 영상 편집 + 유튜브 쇼츠 연동 앱
 

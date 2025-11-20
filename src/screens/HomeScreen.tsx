@@ -9,6 +9,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
+import AnimatedBackground from '../components/AnimatedBackground';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -19,9 +20,9 @@ const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
   return (
-    <View style={styles.container}>
+    <AnimatedBackground variant="home">
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Idol Filter</Text>
+        <Text style={styles.title}>GlowCam</Text>
         <Text style={styles.subtitle}>아이돌 감성 필터로 완벽한 영상을 만들어보세요</Text>
 
         <TouchableOpacity
@@ -46,15 +47,11 @@ const HomeScreen: React.FC = () => {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </AnimatedBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
   content: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -62,10 +59,14 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 36,
+    fontSize: 48,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 10,
+    textShadowColor: '#FF7CCB',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
+    letterSpacing: 2,
   },
   subtitle: {
     fontSize: 16,
